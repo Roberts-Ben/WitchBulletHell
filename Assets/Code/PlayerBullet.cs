@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Bullet : MonoBehaviour
+public class PlayerBullet : MonoBehaviour
 {
     private GameManager gameManager;
 
@@ -23,7 +23,7 @@ public class Bullet : MonoBehaviour
         {
             gameManager.DeactivateBullet(this.gameObject);
         }
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Enemy"))
         {
             gameManager.DeactivateBullet(this.gameObject);
             Destroy(other.gameObject);

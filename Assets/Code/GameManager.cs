@@ -7,8 +7,12 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
 
     public List<GameObject> bulletPool;
+    public List<GameObject> playerBulletPool;
 
     public GameObject bulletPrefab;
+    public GameObject playerBulletPrefab;
+
+    public static GameObject player;
 
     void Awake()
     {
@@ -21,9 +25,15 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        player = GameObject.Find("Player");
     }
 
-    public void CreateBullet(BulletSpawner spawner)
+    public GameObject GetPlayerGameObject()
+    {
+        return player;
+    }
+
+    public void CreateBullet(BulletSpawner spawner, Quaternion _rotation)
     {
         GameObject bullet = null;
         foreach (GameObject go in bulletPool)
@@ -38,12 +48,38 @@ public class GameManager : MonoBehaviour
 
         if(bullet == null)
         {
-            bullet = Instantiate(bulletPrefab, spawner.transform.position, Quaternion.identity);
+            bullet = Instantiate(bulletPrefab, spawner.transform.position, _rotation);
             bulletPool.Add(bullet);
         }
         
         bullet.GetComponent<Bullet>().speed = spawner.speed;
-        bullet.transform.SetPositionAndRotation(spawner.transform.position, spawner.transform.rotation);
+        bullet.transform.SetPositionAndRotation(spawner.transform.position, _rotation);
+    }
+
+    public void CreatePlayerBullet(CharacterController character)
+    {
+        for(int i = 0; i < character.bulletCount; i++)
+        {
+            GameObject bullet = null;
+            foreach (GameObject go in playerBulletPool)
+            {
+                if (!go.activeSelf)
+                {
+                    bullet = go;
+                    go.SetActive(true);
+                    break;
+                }
+            }
+
+            if (bullet == null)
+            {
+                bullet = Instantiate(playerBulletPrefab, character.bulletfirePositions[i].transform.position, Quaternion.identity);
+                playerBulletPool.Add(bullet);
+            }
+
+            bullet.GetComponent<PlayerBullet>().speed = character.bulletSpeed;
+            bullet.transform.SetPositionAndRotation(character.bulletfirePositions[i].transform.position, character.transform.rotation);
+        }
     }
 
     public GameObject GetBullet(GameObject bullet)
