@@ -52,7 +52,7 @@ public class GameManager : MonoBehaviour
             bulletPool.Add(bullet);
         }
         
-        bullet.GetComponent<Bullet>().speed = spawner.speed;
+        bullet.GetComponent<Bullet>().speed = spawner.pattern[0].GetSpeed();
         bullet.transform.SetPositionAndRotation(spawner.transform.position, _rotation);
     }
 
@@ -92,7 +92,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-
+            Debug.LogWarning(bullet + "not found in pool");
         }
         return null;
     }

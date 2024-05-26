@@ -23,6 +23,13 @@ public class CharacterController : MonoBehaviour
 
     void Update()
     {
+        if(Input.GetKeyDown(KeyCode.Space))
+        {
+            if(bulletCount < bulletfirePositions.Count)
+            {
+                bulletCount++;
+            }
+        }
         transform.position += moveSpeed * Time.deltaTime * new Vector3(0f, Input.GetAxis("Vertical"), Input.GetAxis("Horizontal"));
         timer += Time.deltaTime;
         

@@ -1,31 +1,18 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using static BullletPattern;
 
 public class BulletSpawner : MonoBehaviour
 {
-    enum SpawnerType { Straight, Spin , Circle, Spread, Flower, Ring, Follow, Cone}
-    enum ProjetileType {Straight, Curved, Spiral, Wavy }
+    public List<BullletPattern> pattern;
 
     public GameObject bullet;
     public float bulletLife = 1f;
-    public float speed = 1f;
 
     private float timer = 0f;
+    private int currentPattern = 0;
 
-    // Circular pattern
-    public int bulletsPerShot = 1;
-    public float anglePerBullet = 1f;
-
-    // Spread Pattern
-    public float spreadAngle = 1f;
-    public float timeBetweenSpreadShots = 1f;
-
-    // Ring Pattern
-    public int burstsPerShot = 1;
-    public float angleOffsetPerBurst = 1f;
-
-    [SerializeField] private SpawnerType spawnerType;
-    [SerializeField] private ProjetileType projectileType;
     [SerializeField] private float firingRate = 1f;
 
     private float rotation = 0;
@@ -42,7 +29,7 @@ public class BulletSpawner : MonoBehaviour
         timer += Time.deltaTime;
         if (timer >= firingRate)
         {
-            switch (spawnerType)
+            switch (pattern[currentPattern]._spawnerType)
             {
                 case SpawnerType.Straight:
                     StartCoroutine(FireStraight());
@@ -58,26 +45,27 @@ public class BulletSpawner : MonoBehaviour
                     break;
                 case SpawnerType.Flower:
                     break;
-                case SpawnerType.Ring:
-                    for(int i = 0; i < burstsPerShot; i++)
-                    {
-                        StartCoroutine(FireRing(i));
-                    }  
-                    break;
                 case SpawnerType.Follow:
                     StartCoroutine(FireFollow());
-                    break;
-                case SpawnerType.Cone:
-                    StartCoroutine(FireCone());
                     break;
                 default:
                     break;
             }
             timer = 0;
+
+            if(pattern.Count > 1)
+            {
+                if (currentPattern < pattern.Count - 1)
+                {
+                    currentPattern++;
+                }
+                else
+                {
+                    currentPattern = 0;
+                }
+            }
         }
     }
-
-
     IEnumerator FireStraight()
     {
         gameManager.CreateBullet(this, transform.rotation);
@@ -86,57 +74,37 @@ public class BulletSpawner : MonoBehaviour
     IEnumerator FireSpin()
     {
         gameManager.CreateBullet(this, transform.rotation * Quaternion.AngleAxis(rotation, transform.right));
-        rotation += anglePerBullet;
+        rotation += pattern[currentPattern].GetAnglePerBullet();
         yield return null;
     }
     IEnumerator FireCircle()
     {
-        for (int i = 0; i < bulletsPerShot; i++)
+        yield return new WaitForSeconds(firingRate);
+        rotation += pattern[currentPattern].GetAngleOffsetPerBurst();
+        for (int i = 0; i < pattern[currentPattern].GetBulletsPerShot(); i++)
         {
             gameManager.CreateBullet(this, Quaternion.AngleAxis(rotation, transform.right));
-            rotation += anglePerBullet;
+            rotation += pattern[currentPattern].GetAnglePerBullet();
         }
+
         yield return null;
     }
     IEnumerator FireSpread()
     {
-        rotation = spreadAngle * 1.5f;
+        rotation = -pattern[currentPattern].GetSpreadAngle() * 1.5f;
         
-        for (int i = 0; i < bulletsPerShot; i++)
+        for (int i = 0; i < pattern[currentPattern].GetBulletsPerShot(); i++)
         {
-            yield return new WaitForSeconds(timeBetweenSpreadShots);
+            yield return new WaitForSeconds(pattern[currentPattern].GetTimeBetweenSpreadShots());
             gameManager.CreateBullet(this, Quaternion.AngleAxis(rotation, transform.right));
-            float angleDelta = spreadAngle / bulletsPerShot;
-            rotation += angleDelta;
+            float angleDelta = pattern[currentPattern].GetSpreadAngle() / pattern[currentPattern].GetBulletsPerShot();
+            rotation -= angleDelta;
         }
-        yield return null;
-    }
-    IEnumerator FireRing(int currentBurst)
-    {
-        yield return new WaitForSeconds(firingRate * currentBurst / 2);
-        rotation += angleOffsetPerBurst;
-        for (int i = 0; i < bulletsPerShot; i++)
-        {
-            gameManager.CreateBullet(this, Quaternion.AngleAxis(rotation, transform.right));
-            rotation += anglePerBullet;
-        }
-
         yield return null;
     }
     IEnumerator FireFollow()
     {
         gameManager.CreateBullet(this, Quaternion.LookRotation(gameManager.GetPlayerGameObject().transform.position,transform.up));
-        yield return null;
-    }
-    IEnumerator FireCone()
-    {
-        rotation = spreadAngle / 2;
-        float angleDelta = spreadAngle / bulletsPerShot;
-        for (int i = 0; i < bulletsPerShot; i++)
-        {
-            gameManager.CreateBullet(this, Quaternion.AngleAxis(rotation, transform.right));
-            rotation += angleDelta;
-        }
         yield return null;
     }
 }

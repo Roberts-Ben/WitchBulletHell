@@ -25,8 +25,8 @@ public class Bullet : MonoBehaviour
         }
         if (other.CompareTag("Player"))
         {
-            gameManager.DeactivateBullet(this.gameObject);
             Destroy(other.gameObject);
+            gameManager.DeactivateBullet(this.gameObject);
         }
     }
 }

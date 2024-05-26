@@ -25,8 +25,9 @@ public class PlayerBullet : MonoBehaviour
         }
         if (other.CompareTag("Enemy"))
         {
-            gameManager.DeactivateBullet(this.gameObject);
             Destroy(other.gameObject);
+            gameManager.DeactivateBullet(this.gameObject);
+            
         }
     }
 }
